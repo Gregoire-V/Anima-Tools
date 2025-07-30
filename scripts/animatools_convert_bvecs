@@ -38,7 +38,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", required=True, 
         help="Output bvec file.")
     parser.add_argument("-c", "--conversion", default="FSL2ANIMA", 
-        choices=["FSL2ANIMA", "ANIMA2FSL"], help="Conversion to apply.")
+        choices=["FSL2ANIMA", "ANIMA2FSL", "ANIMA2XYZ", "XYZ2ANIMA"], help="Conversion to apply.")
     parser.add_argument("-r", "--reference", required=True, 
         help="Reference Nifti image (e.g. the DWI volume).")
     args = parser.parse_args()
@@ -64,4 +64,15 @@ if __name__ == "__main__":
         output_bvecs = np.dot(np.linalg.inv(isometry), bvecs)
         if np.linalg.det(isometry) > 0:
             output_bvecs[0] *= -1
+    elif args.conversion == "ANIMA2XYZ":
+        #Situation where we still expect real coordinates, but in RAS convention (intermediate situation between Anima and FSL)
+        #SWitch from LPS to RAS
+        bvecs[0] *= -1
+        bvecs[1] *= -1
+        output_bvecs = bvecs
+    elif args.conversion == "XYZ2ANIMA" :
+        #Switch from RAS to LPS
+        bvecs[0] *= -1
+        bvecs[1] *= -1
+        output_bvecs = bvecs
     np.savetxt(args.output, output_bvecs)
